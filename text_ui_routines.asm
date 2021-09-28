@@ -86,7 +86,7 @@ _text_ui_write_loop:
     ld l, (ix)
     inc ix
 
-    add hl, hl
+    sla l
     add hl, hl
     add hl, hl                      ; multiply by 8
     add hl, font_odd - 32 * 8 + 7   ; add 7 to point to bottom
@@ -97,7 +97,7 @@ _text_ui_write_loop:
     ld l, (ix)
     inc ix
 
-    add hl, hl
+    sla l
     add hl, hl
     add hl, hl                      ; multiply by 8
     add hl, font_even - 32 * 8 + 7  ; hl now holds characted data B (bottom)
