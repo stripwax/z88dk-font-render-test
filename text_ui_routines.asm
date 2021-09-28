@@ -31,6 +31,7 @@ _text_ui_write:
     call asm_zx_cxy2saddr
 
     ex de, hl                       ; de now holds a screen address
+    ld iyh, d                       ; hang onto a copy of d, because we reset it later
 
 _text_ui_write_loop:
     ld h, 0
@@ -77,11 +78,10 @@ _text_ui_write_loop:
     include "text_ui_routine.inc"
 
     inc e                           ; onto next screen address position (horisontally)
-    ld a, d                         ; restore (h)l from 7 increments
-    sub 7
-    ld d, a
+    ld d, iyh                       ; restore d
 
     dec iyl                         ; do we have more to print?
-    ret z                           ; we're done
+    jp nz, _text_ui_write_loop
 
-    jp _text_ui_write_loop
+    ret                             ; we're done
+
