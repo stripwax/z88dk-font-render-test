@@ -1,4 +1,3 @@
-    ld a, (bc)
-    ld (de), a                      ; put it on screen
-
-    inc bc
+    include "text_ui_routine_odd_onerow.inc"
+    inc d
+    inc l

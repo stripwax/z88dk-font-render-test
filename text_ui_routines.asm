@@ -34,17 +34,20 @@ _text_ui_write:
 _text_ui_write_loop:
     ld a, (ix)
     add a, a
-    ld (_text_ui_write_odd_get + 2), a
+    ld (_text_ui_write_odd_get + 1), a
 _text_ui_write_odd_get:
-    ld bc, (font_odd_index+0)
+    ld hl, (font_odd_index+0)
+
+;    dec iyl
+;    jp z, _text_ui_write_odd_only
 
     inc ix
 
     ld a, (ix)
     add a, a
-    ld (_text_ui_write_even_get + 1), a
+    ld (_text_ui_write_even_get + 2), a
 _text_ui_write_even_get:
-    ld hl, (font_even_index)
+    ld bc, (font_even_index)
 
     inc ix
 
@@ -56,20 +59,13 @@ _text_ui_write_even_get:
     ; do ([d++]e) << (bc++) | (hl++) 8 times
 
     include "text_ui_routine.inc"
-    inc d
     include "text_ui_routine.inc"
-    inc d
     include "text_ui_routine.inc"
-    inc d
     include "text_ui_routine.inc"
-    inc d
     include "text_ui_routine.inc"
-    inc d
     include "text_ui_routine.inc"
-    inc d
     include "text_ui_routine.inc"
-    inc d
-    include "text_ui_routine.inc"
+    include "text_ui_routine_onerow.inc"
 
     dec iyl                         ; do we have more to print?
     ret z
@@ -80,17 +76,20 @@ _text_ui_write_even_get:
 
     ld a, (ix)
     add a, a
-    ld (_text_ui_write_odd_get_rev + 2), a
+    ld (_text_ui_write_odd_get_rev + 1), a
 _text_ui_write_odd_get_rev:
-    ld bc, (font_odd_index_rev+0)
+    ld hl, (font_odd_index_rev+0)
+
+;    dec iyl
+;    jp z, _text_ui_write_odd_rev_only
 
     inc ix
 
     ld a, (ix)
     add a, a
-    ld (_text_ui_write_even_get_rev + 1), a
+    ld (_text_ui_write_even_get_rev + 2), a
 _text_ui_write_even_get_rev:
-    ld hl, (font_even_index_rev+0)
+    ld bc, (font_even_index_rev+0)
 
     inc ix
 
@@ -102,20 +101,13 @@ _text_ui_write_even_get_rev:
     ; do ([d--]e) << (bc--) | (hl--) 8 times
 
     include "text_ui_routine_rev.inc"
-    dec d
     include "text_ui_routine_rev.inc"
-    dec d
     include "text_ui_routine_rev.inc"
-    dec d
     include "text_ui_routine_rev.inc"
-    dec d
     include "text_ui_routine_rev.inc"
-    dec d
     include "text_ui_routine_rev.inc"
-    dec d
     include "text_ui_routine_rev.inc"
-    dec d
-    include "text_ui_routine_rev.inc"
+    include "text_ui_routine_onerow.inc"
 
     inc e                           ; onto next screen address position (horizontally)
 
@@ -124,3 +116,38 @@ _text_ui_write_even_get_rev:
 
     ret                             ; we're done
 
+;_text_ui_write_odd_only:
+;    ; now we hold the following
+;    ; de - current screen address: top of char
+;    ; hl - current character A data address of first pixel row
+;
+;    ; do ([d++]e) << (hl++) 8 times
+;
+;    include "text_ui_routine_odd.inc"
+;    include "text_ui_routine_odd.inc"
+;    include "text_ui_routine_odd.inc"
+;    include "text_ui_routine_odd.inc"
+;    include "text_ui_routine_odd.inc"
+;    include "text_ui_routine_odd.inc"
+;    include "text_ui_routine_odd.inc"
+;    include "text_ui_routine_odd_onerow.inc"
+;
+;    ret
+
+;_text_ui_write_odd_rev_only:
+;    ; now we hold the following
+;    ; de - current screen address: BOTTOM of char
+;    ; hl - current character A data address of LAST pixel row
+;
+;    ; do ([d--]e) << (hl--) 8 times
+;
+;    include "text_ui_routine_odd_rev.inc"
+;    include "text_ui_routine_odd_rev.inc"
+;    include "text_ui_routine_odd_rev.inc"
+;    include "text_ui_routine_odd_rev.inc"
+;    include "text_ui_routine_odd_rev.inc"
+;    include "text_ui_routine_odd_rev.inc"
+;    include "text_ui_routine_odd_rev.inc"
+;    include "text_ui_routine_odd_onerow.inc"
+;
+;    ret
