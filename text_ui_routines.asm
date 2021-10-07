@@ -1,31 +1,16 @@
 EXTERN _text_x
 EXTERN _text_y
 EXTERN asm_zx_cxy2saddr
-EXTERN _font_4x8_80columns
 PUBLIC _text_ui_write
 
-ALIGN 8
-
-font_even:
-    binary "font_4x8_even.bin"
-
-font_odd:
-    binary "font_4x8_odd.bin"
-
-ALIGN 256
-
-font_odd_top_lut:
-    defs 256 ; font_odd+0, font_odd+8, etc
-font_even_top_lut:
-    defs 256 ; font_even+0, font_even+8, etc
-font_odd_bottom_lut:
-    defs 256 ; font_odd+7, font_odd+15, etc
-font_even_bottom_lut:
-    defs 256 ; font_even+7, font_even+15, etc
+EXTERN font_even_index
+EXTERN font_odd_index
+EXTERN font_even_index_rev
+EXTERN font_odd_index_rev
 
 
 ; stack: string to write
-; stack: amount to write
+; stack: amount to write  (divided by 2 i.e. 7 => print 14 chars)
 ; registers used:
 ;     iyl - number of characters left to write
 ;     de - current screen address
@@ -47,39 +32,26 @@ _text_ui_write:
     ex de, hl                       ; de now holds a screen address
 
 _text_ui_write_loop:
-;    ld h, 0
-;    ld l, (ix)
-;    sla l
-;    add hl, hl
-;    add hl, hl                      ; multiply by 8
-;    add hl, font_odd - 32 * 8
-;    ld bc, hl                       ; bc now holds character data A
-
     ld a, (ix)
     add a, a
-    ld (get1_a+2), a
-get1_a: ld bc, (font_odd_top_lut+0)
+    ld (_text_ui_write_odd_get + 2), a
+_text_ui_write_odd_get:
+    ld bc, (font_odd_index+0)
 
     inc ix
 
-;    ld h, 0
-;    ld l, (ix)
-;    sla l
-;    add hl, hl
-;    add hl, hl                      ; multiply by 8
-;    add hl, font_even - 32 * 8      ; hl now holds characted data B
-
     ld a, (ix)
     add a, a
-    ld (get2_a+2), a
-get2_a: ld hl, (font_even_top_lut+0)
+    ld (_text_ui_write_even_get + 1), a
+_text_ui_write_even_get:
+    ld hl, (font_even_index)
 
     inc ix
 
     ; now we hold the following
-    ; de - current screen address
-    ; bc - current characted A data address
-    ; hl - current character B data address
+    ; de - current screen address: top of char
+    ; bc - current character A data address of first pixel row
+    ; hl - current character B data address of first pixel row
 
     ; do ([d++]e) << (bc++) | (hl++) 8 times
 
@@ -106,40 +78,26 @@ get2_a: ld hl, (font_even_top_lut+0)
 
                                     ; next two characters, printed bottom-to-top, to avoid d<-iyh instructions
 
-;    ld h, 0
-;    ld l, (ix)
-;    sla l
-;    add hl, hl
-;    add hl, hl                      ; multiply by 8
-;    add hl, font_odd - 32 * 8 + 7   ; add 7 to point to bottom
-
-;    ld bc, hl                       ; bc now holds characted data A (bottom)
-
     ld a, (ix)
     add a, a
-    ld (get1_b+2), a
-get1_b: ld bc, (font_odd_bottom_lut+0)
+    ld (_text_ui_write_odd_get_rev + 2), a
+_text_ui_write_odd_get_rev:
+    ld bc, (font_odd_index_rev+0)
 
     inc ix
 
-;    ld h, 0
-;    ld l, (ix)
-;    sla l
-;    add hl, hl
-;    add hl, hl                      ; multiply by 8
-;    add hl, font_even - 32 * 8 + 7  ; hl now holds characted data B (bottom)
-
     ld a, (ix)
     add a, a
-    ld (get2_b+1), a
-get2_b: ld hl, (font_even_bottom_lut+0)
+    ld (_text_ui_write_even_get_rev + 1), a
+_text_ui_write_even_get_rev:
+    ld hl, (font_even_index_rev+0)
 
     inc ix
 
     ; now we hold the following
-    ; de - current screen address
-    ; bc - current characted A data address
-    ; hl - current character B data address
+    ; de - current screen address: BOTTOM of char
+    ; bc - current character A data address of LAST pixel row
+    ; hl - current character B data address of LAST pixel row
 
     ; do ([d--]e) << (bc--) | (hl--) 8 times
 
@@ -159,7 +117,7 @@ get2_b: ld hl, (font_even_bottom_lut+0)
     dec d
     include "text_ui_routine_rev.inc"
 
-    inc e                           ; onto next screen address position (horisontally)
+    inc e                           ; onto next screen address position (horizontally)
 
     dec iyl                         ; do we have more to print?
     jp nz, _text_ui_write_loop
