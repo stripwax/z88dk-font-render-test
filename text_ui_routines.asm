@@ -10,7 +10,7 @@ EXTERN font_odd_index_rev
 
 
 ; stack: string to write
-; stack: amount to write  (divided by 2 i.e. 7 => print 14 chars)
+; stack: amount to write (number of characters)
 ; registers used:
 ;     iyl - number of characters left to write
 ;     de - current screen address
@@ -38,8 +38,8 @@ _text_ui_write_loop:
 _text_ui_write_odd_get:
     ld hl, (font_odd_index+0)
 
-;    dec iyl
-;    jp z, _text_ui_write_odd_only
+    dec iyl
+    jp z, _text_ui_write_odd_only
 
     inc ix
 
@@ -80,8 +80,8 @@ _text_ui_write_even_get:
 _text_ui_write_odd_get_rev:
     ld hl, (font_odd_index_rev+0)
 
-;    dec iyl
-;    jp z, _text_ui_write_odd_rev_only
+    dec iyl
+    jp z, _text_ui_write_odd_rev_only
 
     inc ix
 
@@ -116,38 +116,38 @@ _text_ui_write_even_get_rev:
 
     ret                             ; we're done
 
-;_text_ui_write_odd_only:
-;    ; now we hold the following
-;    ; de - current screen address: top of char
-;    ; hl - current character A data address of first pixel row
-;
-;    ; do ([d++]e) << (hl++) 8 times
-;
-;    include "text_ui_routine_odd.inc"
-;    include "text_ui_routine_odd.inc"
-;    include "text_ui_routine_odd.inc"
-;    include "text_ui_routine_odd.inc"
-;    include "text_ui_routine_odd.inc"
-;    include "text_ui_routine_odd.inc"
-;    include "text_ui_routine_odd.inc"
-;    include "text_ui_routine_odd_onerow.inc"
-;
-;    ret
+_text_ui_write_odd_only:
+    ; now we hold the following
+    ; de - current screen address: top of char
+    ; hl - current character A data address of first pixel row
 
-;_text_ui_write_odd_rev_only:
-;    ; now we hold the following
-;    ; de - current screen address: BOTTOM of char
-;    ; hl - current character A data address of LAST pixel row
-;
-;    ; do ([d--]e) << (hl--) 8 times
-;
-;    include "text_ui_routine_odd_rev.inc"
-;    include "text_ui_routine_odd_rev.inc"
-;    include "text_ui_routine_odd_rev.inc"
-;    include "text_ui_routine_odd_rev.inc"
-;    include "text_ui_routine_odd_rev.inc"
-;    include "text_ui_routine_odd_rev.inc"
-;    include "text_ui_routine_odd_rev.inc"
-;    include "text_ui_routine_odd_onerow.inc"
-;
-;    ret
+    ; do ([d++]e) << (hl++) 8 times
+
+    include "text_ui_routine_odd.inc"
+    include "text_ui_routine_odd.inc"
+    include "text_ui_routine_odd.inc"
+    include "text_ui_routine_odd.inc"
+    include "text_ui_routine_odd.inc"
+    include "text_ui_routine_odd.inc"
+    include "text_ui_routine_odd.inc"
+    include "text_ui_routine_odd_onerow.inc"
+
+    ret
+
+_text_ui_write_odd_rev_only:
+    ; now we hold the following
+    ; de - current screen address: BOTTOM of char
+    ; hl - current character A data address of LAST pixel row
+
+    ; do ([d--]e) << (hl--) 8 times
+
+    include "text_ui_routine_odd_rev.inc"
+    include "text_ui_routine_odd_rev.inc"
+    include "text_ui_routine_odd_rev.inc"
+    include "text_ui_routine_odd_rev.inc"
+    include "text_ui_routine_odd_rev.inc"
+    include "text_ui_routine_odd_rev.inc"
+    include "text_ui_routine_odd_rev.inc"
+    include "text_ui_routine_odd_onerow.inc"
+
+    ret
